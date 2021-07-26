@@ -57,10 +57,16 @@ def InsertCSV(name):
                 (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], 
                 round(random.uniform(1.0, 50.0),2), random.randint(1,10))) # Money and OwnerID, randomly selected because I don't want to go through it manually
 
-# createDB()
+createDB()
 
-cur.execute("SELECT * FROM Pokemon WHERE ID < 50")
-headers = ["ID", "Name", "Type1", "Type2", "Total", "HP", "Atk", "Def", "SpAtk", "SpDef", "Speed", "Gene", "Legend", "Cost", "Owner"]
+cur.execute("""
+SELECT Pokemon.ID, Pokemon.Name, Pokemon.Type1, Pokemon.Type2, Pokemon.StatsTotal, Pokemon.HP, Pokemon.Attack, Pokemon.Defense, Pokemon.SpAtk,
+Pokemon.SpDef, Pokemon.Speed, Pokemon.Generation, Pokemon.Legendary, Pokemon.Cost, Players.FirstName FROM Pokemon
+INNER JOIN Players ON Pokemon.OwnerID = Players.ID
+ORDER BY Pokemon.ID
+""")
+
+headers = ["ID", "Name", "Type1", "Type2", "Total", "HP", "Atk", "Def", "SpAtk", "SpDef", "Speed", "Gen", "Legend", "Cost", "Owner"]
 print(tabulate.tabulate(cur.fetchall(), headers, tablefmt = 'github'))
 
 con.commit()
