@@ -4,6 +4,9 @@ import sqlite3, tabulate, csv, random
 con = sqlite3.connect('pokemon.db')
 cur = con.cursor()
 
+# Declaring some variables
+validTypes = ["Normal", "Fire", "Water", "Grass", "Electric", "Ice", "Fighting", "Poison", "Ground", "Flying", "Psychic", "Bug", "Rock", "Ghost", "Dark", "Dragon", "Steel", "Fairy"]
+
 # For creating the database, only used once at the beginning or if I want to restart the database
 def createDB():
     # Dropping the tables so I don't have 2 of each
@@ -59,10 +62,28 @@ def InsertCSV(name):
                 (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8], row[9], row[10], row[11], row[12], 
                 round(random.uniform(1.0, 50.0),2), random.randint(1,20))) # Money and OwnerID, randomly selected because I don't want to go through it manually
 
+# This function checks if the stat is below the max, if it isn't it raises an exception that gets called in addPokemon
 def validCheck(stat, max):
     if stat > max or stat < 0:
         raise Exception("Sorry, no numbers below zero or above the max")
 
+# A function that asks the user what they would want to do
+def navigation():
+    try:
+        choice = input("What would you like to do? type 'n' to add a new pokemon, 'r' to remove something from the database, 'p' to print the database or 's' to search for something and press\n")
+        if choice == "n":
+            addPokemon()
+        if choice == "r":
+            removePokemon()
+        if choice == "p":
+            printPokemon()
+        if choice == "s":
+            searchPokemon()
+    except:
+        print("An error has occured, try again.\n")
+        navigation()
+
+# This function is used to insert a pokemon that is created with user input into the database, as well as the user who entered it
 def addPokemon():
     ## Make sure that required fields are not empty
 
@@ -73,7 +94,17 @@ def addPokemon():
         name = input("What is the name of your pokemon? ") #
         # Need to make it so it can only be certain types
         type1 = input("What is type is your pokemon? ")  #
+        if type1 in validTypes:
+            pass
+        else: 
+            raise Exception("Sorry, that is an invalid type")
         type2 = input("What is your pokemon's second type? (Press Enter if empty) ") 
+        if type2 in validTypes:
+            pass
+        elif type2 == "":
+            pass
+        else: 
+            raise Exception("Sorry, that is an invalid type")
         # Needs a cap (150?)
         hp = int(input("How much health does your pokemon have? (Max = 150) ")) #
         validCheck(hp, 150)
@@ -121,7 +152,18 @@ def addPokemon():
         print("An error has occured, try again.\n")
         addPokemon()
 
+def removePokemon():
+    pass
+
+def printPokemon():
+    sortby = input("What do you want to sort by? ")
+
+def searchPokemon():
+    pass
+
 # createDB()
+
+navigation()
 
 addPokemon()
 
