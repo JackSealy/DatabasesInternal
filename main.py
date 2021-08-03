@@ -67,7 +67,7 @@ def validCheck(stat, max):
     if stat > max or stat < 0:
         raise Exception("Sorry, no numbers below zero or above the max")
 
-# A function that asks the user what they would want to do
+# This function asks the user what they would want to do
 def navigation():
     try:
         choice = input("What would you like to do? type 'n' to add a new pokemon, 'r' to remove something from the database, 'p' to print the database or 's' to search for something and press\n")
@@ -153,10 +153,30 @@ def addPokemon():
         addPokemon()
 
 def removePokemon():
-    pass
+    pokeID = int(input("What pokemon do you want to remove (ID) "))
 
 def printPokemon():
-    sortby = input("What do you want to sort by? ")
+    # Assigning variables to user input which can choose what to sort and wether to sort it ascending or descending
+    sortby = input("""What do you want to sort by? (Be cautious of spelling and grammar)\nOptions: Pokemon.ID, Pokemon.Name, Pokemon.Type2, Pokemon.StatsTotal, Pokemon.HP, Pokemon.Attack, Pokemon.Defense, Pokemon.SpAtk, Pokemon.SpDef, Pokemon.Speed, Pokemon.Generation,\nPokemon.Legendary, Pokemon.Cost, Players.FirstName: """)
+    order = input("Do you want to sort by ascending values or descending values? (ASC or DESC) ")
+    # The variable containing the code that will join the tables into one select, and order it by whatever the user says
+    printpokemon = """SELECT Pokemon.ID, Pokemon.Name, Pokemon.Type1, Pokemon.Type2, Pokemon.StatsTotal, Pokemon.HP, Pokemon.Attack, Pokemon.Defense, Pokemon.SpAtk,
+                    Pokemon.SpDef, Pokemon.Speed, Pokemon.Generation, Pokemon.Legendary, Pokemon.Cost, Players.FirstName FROM Pokemon
+                    INNER JOIN Players ON Pokemon.OwnerID = Players.ID
+                    ORDER BY """ + str(sortby)
+
+    if order == "ASC":
+        printpokemon += " ASC"
+        cur.execute(printpokemon)
+    elif order == "DESC":
+        printpokemon += " DESC"
+        cur.execute(printpokemon)
+    else:
+        raise Exception("Problem")
+
+    # Presenting it in a way that looks nice and more like a table without having to print it line by line
+    headers = ["ID", "Name", "Type1", "Type2", "Total", "HP", "Atk", "Def", "SpAtk", "SpDef", "Speed", "Gen", "Legend", "Cost", "Owner"]
+    print(tabulate.tabulate(cur.fetchall(), headers, tablefmt = 'simple'))
 
 def searchPokemon():
     pass
@@ -164,20 +184,6 @@ def searchPokemon():
 # createDB()
 
 navigation()
-
-addPokemon()
-
-# Selecting all from Pokemon except the OwnerID, instead I have joined them to select it in a way so the OwnerID is instead just the Owner's first name
-cur.execute("""
-SELECT Pokemon.ID, Pokemon.Name, Pokemon.Type1, Pokemon.Type2, Pokemon.StatsTotal, Pokemon.HP, Pokemon.Attack, Pokemon.Defense, Pokemon.SpAtk,
-Pokemon.SpDef, Pokemon.Speed, Pokemon.Generation, Pokemon.Legendary, Pokemon.Cost, Players.FirstName FROM Pokemon
-INNER JOIN Players ON Pokemon.OwnerID = Players.ID
-ORDER BY Pokemon.ID;
-""")
-
-# Presenting it in a way that looks nice and more like a table without having to print it line by line
-headers = ["ID", "Name", "Type1", "Type2", "Total", "HP", "Atk", "Def", "SpAtk", "SpDef", "Speed", "Gen", "Legend", "Cost", "Owner"]
-print(tabulate.tabulate(cur.fetchall(), headers, tablefmt = 'simple'))
 
 con.commit()
 con.close()
