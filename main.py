@@ -88,24 +88,29 @@ def addPokemon():
     ## Make sure that required fields are not empty
 
     try:
-        userfirstname = input("What is your first name? ") # 
-        userlastname = input("What is your last name? ") # 
-        userage = input("What is your age? (Press Enter if your would rather leave it blank) ")
+        existTest = input("Are you an existing user? (Y|N) ").upper()
+        if existTest == "N":
+            userfirstname = input("What is your first name? ") # 
+            userlastname = input("What is your last name? ") # 
+            userage = input("What is your age? (Press Enter if your would rather leave it blank) ")
+        elif existTest == "Y":
+            ownerid = int(input("What is your OwnerID? "))
+        else:
+            raise Exception("Error while checking for existing user")
+
         name = input("What is the name of your pokemon? ") #
-        # Need to make it so it can only be certain types
-        type1 = input("What is type is your pokemon? ")  #
+        type1 = input("What is type is your pokemon? ").title()  #
         if type1 in validTypes:
             pass
         else: 
             raise Exception("Sorry, that is an invalid type")
-        type2 = input("What is your pokemon's second type? (Press Enter if empty) ") 
+        type2 = input("What is your pokemon's second type? (Press Enter if empty) ").title() 
         if type2 in validTypes:
             pass
         elif type2 == "":
             pass
         else: 
             raise Exception("Sorry, that is an invalid type")
-        # Needs a cap (150?)
         hp = int(input("How much health does your pokemon have? (Max = 150) ")) #
         validCheck(hp, 150)
         attack = int(input("How much attack does your pokemon have? (Max = 150) ")) #
@@ -119,26 +124,28 @@ def addPokemon():
         speed = int(input("How fast is your pokemon? (Max = 150) ")) #
         validCheck(speed, 150)
         total = hp + attack + defense + spatk + spdef + speed
-        # Needs a cap (10?) 
-        generation = int(input("What generation is your pokemon from? ")) #
-        # Need to make it only true/false
-        legendary = input("Is your pokemon a legendary (True/False) ") #
-        # Needs a cap (50)
+        generation = int(input("What generation is your pokemon from? (Max = 8) ")) #
+        validCheck(generation, 8)
+        legendary = input("Is your pokemon a legendary (True/False) ").title() #
+        if legendary == "True" or legendary == "False":
+            pass
+        else:
+            raise Exception("Error with legendary typing")
         cost = round(float(input("How much is your pokemon card worth? (Max = $50.00) ")),2) #
         validCheck(cost, 50)
     
-        if userage != "":
-            userage = int(userage)
-            cur.execute("INSERT INTO Players (FirstName, LastName, Age) VALUES (?, ?, ?);", (userfirstname, userlastname, int(userage)))
-        elif userage == "":
-            cur.execute("INSERT INTO Players (FirstName, LastName) VALUES (?, ?);", (userfirstname, userlastname))
+        if existTest == "N":
+            if userage != "":
+                userage = int(userage)
+                cur.execute("INSERT INTO Players (FirstName, LastName, Age) VALUES (?, ?, ?);", (userfirstname, userlastname, int(userage)))
+            elif userage == "":
+                cur.execute("INSERT INTO Players (FirstName, LastName) VALUES (?, ?);", (userfirstname, userlastname))
 
-        cur.execute("SELECT ID FROM Players ORDER BY ID DESC LIMIT 1")
-        ownerid = str(cur.fetchall())
-        disallowed_characters = "[(,)]"
-        for character in disallowed_characters:
-            ownerid = ownerid.replace(character, "")
-        print(ownerid)
+            cur.execute("SELECT ID FROM Players ORDER BY ID DESC LIMIT 1")
+            ownerid = str(cur.fetchall())
+            disallowed_characters = "[(,)]"
+            for character in disallowed_characters:
+                ownerid = ownerid.replace(character, "")
 
         if type2 != "":
             cur.execute("""INSERT INTO Pokemon (Name, Type1, Type2, StatsTotal, HP, Attack, Defense, SpAtk, SpDef, Speed, Generation, Legendary, Cost, OwnerID) VALUES 
@@ -147,7 +154,7 @@ def addPokemon():
         elif type2 == "":
             cur.execute("""INSERT INTO Pokemon (Name, Type1, StatsTotal, HP, Attack, Defense, SpAtk, SpDef, Speed, Generation, Legendary, Cost, OwnerID) VALUES 
             (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);""",
-            (name, type1, total, hp, attack, defense, spatk, spdef, speed, generation, legendary, cost, ownerid)) # Enter OwnerID
+            (name, type1, total, hp, attack, defense, spatk, spdef, speed, generation, legendary, cost, ownerid)) 
     except:
         print("An error has occured, try again.\n")
         addPokemon()
