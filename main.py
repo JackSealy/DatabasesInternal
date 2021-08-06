@@ -74,11 +74,11 @@ def navigation():
         if choice == "n":
             addPokemon()
         if choice == "r":
-            removePokemon()
+            removeData()
         if choice == "p":
             printPokemon()
         if choice == "s":
-            searchPokemon()
+            searchDatabase()
     except:
         print("An error has occured, try again.\n")
         navigation()
@@ -159,8 +159,45 @@ def addPokemon():
         print("An error has occured, try again.\n")
         addPokemon()
 
-def removePokemon():
-    pokeID = int(input("What pokemon do you want to remove (ID) "))
+    repeat()
+
+def removeData():
+    table = input("What table do you want to remove from? (Players or Pokemon) ")
+    if table == "Players":
+        playerID = input("What player do you want to remove? (ID) ")
+        cur.execute("SELECT * FROM Players WHERE ID = " + playerID)
+        data = str(cur.fetchall())
+        disallowed_characters = "()"
+        for character in disallowed_characters:
+                data = data.replace(character, "")
+
+        confirmation = input("Are you sure you want to remove " + data + " from the database? (Y|N) ").upper()
+        if confirmation == "Y":
+            cur.execute("DELETE FROM Players WHERE ID = " + playerID)
+        elif confirmation == "N":
+            navigation()
+        else:
+            raise Exception("Exception")
+
+    elif table == "Pokemon":
+        pokeID = input("What pokemon do you want to remove? (ID) ")
+        cur.execute("SELECT * FROM Pokemon WHERE ID = " + pokeID)
+        data = str(cur.fetchall())
+        disallowed_characters = "()"
+        for character in disallowed_characters:
+                data = data.replace(character, "")
+
+        confirmation = input("Are you sure you want to remove " + data + " from the database? (Y|N) ").upper()
+        if confirmation == "Y":
+            cur.execute("DELETE FROM Pokemon WHERE ID = " + pokeID)
+        elif confirmation == "N":
+            navigation()
+        else:
+            raise Exception("Exception")
+    else:
+        raise Exception("Exception")
+
+    repeat()
 
 def printPokemon():
     # Assigning variables to user input which can choose what to sort and wether to sort it ascending or descending
@@ -185,8 +222,20 @@ def printPokemon():
     headers = ["ID", "Name", "Type1", "Type2", "Total", "HP", "Atk", "Def", "SpAtk", "SpDef", "Speed", "Gen", "Legend", "Cost", "Owner"]
     print(tabulate.tabulate(cur.fetchall(), headers, tablefmt = 'simple'))
 
-def searchPokemon():
-    pass
+    repeat()
+
+def searchDatabase():
+    
+    repeat()
+
+def repeat():
+    temp = input("Do you want to continue (Y|N) ").upper()
+    if temp == "Y":
+        navigation()
+    elif temp == "N":
+        pass
+    else:
+        raise Exception("Exception")
 
 # createDB()
 
