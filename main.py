@@ -48,7 +48,7 @@ def createDB():
     InsertCSV("players")
     InsertCSV("pokemon")
 
-# A function to insert a CSV file into the database
+# The function inserts a CSV file into the database
 def InsertCSV(name):
     with open((name + ".csv"), 'r') as file:
         reader = csv.reader(file)
@@ -64,13 +64,13 @@ def InsertCSV(name):
 
 # This function checks if the stat is below the max, if it isn't it raises an exception that gets called in addPokemon
 def validCheck(stat, max):
-    if stat > max or stat < 0:
+    if stat > max or stat <= 0:
         raise Exception("Sorry, no numbers below zero or above the max")
 
 # This function asks the user what they would want to do
 def navigation():
     try:
-        choice = input("What would you like to do? type 'n' to add a new pokemon, 'r' to remove something from the database, 'p' to print the database or 's' to search for something and press\n")
+        choice = input("What would you like to do?\nType 'n' to add a new pokemon/player, 'r' to remove something from the database, 'p' to print the pokemon table or 's' to search for a specific group or singular piece of data\n").lower()
         if choice == "n":
             addPokemon()
         if choice == "r":
@@ -161,44 +161,49 @@ def addPokemon():
 
     repeat()
 
+# This function removes data from either the pokemon table or the player table
 def removeData():
-    table = input("What table do you want to remove from? (Players or Pokemon) ")
-    if table == "Players":
-        playerID = input("What player do you want to remove? (ID) ")
-        cur.execute("SELECT * FROM Players WHERE ID = " + playerID)
-        data = str(cur.fetchall())
-        disallowed_characters = "()"
-        for character in disallowed_characters:
-                data = data.replace(character, "")
+    try:
+        table = input("What table do you want to remove from? (Players or Pokemon) ")
+        if table == "Players":
+            playerID = input("What player do you want to remove? (ID) ")
+            cur.execute("SELECT * FROM Players WHERE ID = " + playerID)
+            data = str(cur.fetchall())
+            disallowed_characters = "()"
+            for character in disallowed_characters:
+                    data = data.replace(character, "")
 
-        confirmation = input("Are you sure you want to remove " + data + " from the database? (Y|N) ").upper()
-        if confirmation == "Y":
-            cur.execute("DELETE FROM Players WHERE ID = " + playerID)
-        elif confirmation == "N":
-            navigation()
+            confirmation = input("Are you sure you want to remove " + data + " from the database? (Y|N) ").upper()
+            if confirmation == "Y":
+                cur.execute("DELETE FROM Players WHERE ID = " + playerID)
+            elif confirmation == "N":
+                navigation()
+            else:
+                raise Exception("Exception")
+
+        elif table == "Pokemon":
+            pokeID = input("What pokemon do you want to remove? (ID) ")
+            cur.execute("SELECT * FROM Pokemon WHERE ID = " + pokeID)
+            data = str(cur.fetchall())
+            disallowed_characters = "()"
+            for character in disallowed_characters:
+                    data = data.replace(character, "")
+
+            confirmation = input("Are you sure you want to remove " + data + " from the database? (Y|N) ").upper()
+            if confirmation == "Y":
+                cur.execute("DELETE FROM Pokemon WHERE ID = " + pokeID)
+            elif confirmation == "N":
+                navigation()
+            else:
+                raise Exception("Exception")
         else:
             raise Exception("Exception")
-
-    elif table == "Pokemon":
-        pokeID = input("What pokemon do you want to remove? (ID) ")
-        cur.execute("SELECT * FROM Pokemon WHERE ID = " + pokeID)
-        data = str(cur.fetchall())
-        disallowed_characters = "()"
-        for character in disallowed_characters:
-                data = data.replace(character, "")
-
-        confirmation = input("Are you sure you want to remove " + data + " from the database? (Y|N) ").upper()
-        if confirmation == "Y":
-            cur.execute("DELETE FROM Pokemon WHERE ID = " + pokeID)
-        elif confirmation == "N":
-            navigation()
-        else:
-            raise Exception("Exception")
-    else:
-        raise Exception("Exception")
+    except:
+        removeData()
 
     repeat()
 
+# This function prints out the table sorted by something that the user chooses, can be descending or ascending
 def printPokemon():
     # Assigning variables to user input which can choose what to sort and wether to sort it ascending or descending
     sortby = input("""What do you want to sort by? (Be cautious of spelling and grammar)\nOptions: Pokemon.ID, Pokemon.Name, Pokemon.Type2, Pokemon.StatsTotal, Pokemon.HP, Pokemon.Attack, Pokemon.Defense, Pokemon.SpAtk, Pokemon.SpDef, Pokemon.Speed, Pokemon.Generation,\nPokemon.Legendary, Pokemon.Cost, Players.FirstName: """)
@@ -224,12 +229,90 @@ def printPokemon():
 
     repeat()
 
-def searchDatabase():
+# This function continues the searchDatabase function
+def searchin(amount, table, category):
+    if amount == "S":
+        if table == "Players":
+            value = input("What value to you want to search for? ")
+            cur.execute("SELECT * FROM Players WHERE " + category + " = " + "'" + value + "'")
+            # Presenting it in a way that looks nice and more like a table without having to print it line by line
+            headers = ["ID", "First Name", "Last Name", "Age"]
+            print(tabulate.tabulate(cur.fetchall(), headers, tablefmt = 'simple'))
     
+        elif table == "Pokemon":
+            value = input("What value to you want to search for? ")
+            cur.execute("SELECT * FROM Pokemon WHERE " + category + " = " + "'" + value + "'")
+            # Presenting it in a way that looks nice and more like a table without having to print it line by line
+            headers = ["ID", "Name", "Type1", "Type2", "Total", "HP", "Atk", "Def", "SpAtk", "SpDef", "Speed", "Gen", "Legend", "Cost", "Owner"]
+            print(tabulate.tabulate(cur.fetchall(), headers, tablefmt = 'simple'))
+    
+        else:
+            raise Exception("Problem")
+    if amount == "G":
+        if table == "Players":
+            sign = input("Are you searching for a value greater than (>) or less than (<) a number? ")
+            if sign == ">":
+                value = input("What value to you want to find data greater then? ")
+                cur.execute("SELECT * FROM Players WHERE " + category + " > "  + value)
+                # Presenting it in a way that looks nice and more like a table without having to print it line by line
+                headers = ["ID", "First Name", "Last Name", "Age"]
+                print(tabulate.tabulate(cur.fetchall(), headers, tablefmt = 'simple'))
+            elif sign == ">":
+                value = input("What value to you want to search for? ")
+                cur.execute("SELECT * FROM Players WHERE " + category + " < " + value)
+                # Presenting it in a way that looks nice and more like a table without having to print it line by line
+                headers = ["ID", "First Name", "Last Name", "Age"]
+                print(tabulate.tabulate(cur.fetchall(), headers, tablefmt = 'simple'))
+        elif table == "Pokemon":
+            sign = input("Are you searching for a value greater than (>) or less than (<) a number? ")
+            if sign == ">":
+                value = input("What value to you want to find data greater then? ")
+                cur.execute("SELECT * FROM Pokemon WHERE " + category + " > "  + value)
+                # Presenting it in a way that looks nice and more like a table without having to print it line by line
+                headers = ["ID", "Name", "Type1", "Type2", "Total", "HP", "Atk", "Def", "SpAtk", "SpDef", "Speed", "Gen", "Legend", "Cost", "Owner"]
+                print(tabulate.tabulate(cur.fetchall(), headers, tablefmt = 'simple'))
+            elif sign == ">":
+                value = input("What value to you want to search for? ")
+                cur.execute("SELECT * FROM Pokemon WHERE " + category + " < " + value)
+                # Presenting it in a way that looks nice and more like a table without having to print it line by line
+                headers = ["ID", "Name", "Type1", "Type2", "Total", "HP", "Atk", "Def", "SpAtk", "SpDef", "Speed", "Gen", "Legend", "Cost", "Owner"]
+                print(tabulate.tabulate(cur.fetchall(), headers, tablefmt = 'simple'))
+
+# This function searches either database for a bit of data with one specific ID
+def searchDatabase():
+    try:
+        amount = input("Are you searching for a group of data greater or less then a value (G) or all data that shares the same value (S): ").upper()
+        if amount == "G":
+            table = input("Do you want to search in the Players table or the Pokemon table: ").title()
+            if table == "Players":
+                category = input("What do you want to search in? ")
+                searchin(amount, table, category)
+            elif table == "Pokemon":
+                category = input("What do you want to search in? ")
+                searchin(amount, table, category)
+            else:
+                raise Exception("Problem")
+        elif amount == "S":
+            table = input("Do you want to search in the Players table or the Pokemon table: ").title()
+            if table == "Players":
+                category = input("What do you want to search in? ")
+                searchin(amount, table, category)
+            elif table == "Pokemon":
+                category = input("What do you want to search in? ")
+                searchin(amount, table, category)
+            else:
+                raise Exception("Problem")
+        else:
+            raise Exception("Problem")
+    except:
+        print("An error has occured, try again.\n")
+        searchDatabase()
+
     repeat()
 
+# This function is called after another main funtion to ask if the user would like to continue with the program, if the answer is yes, then it runs navigation() if no then it ends the program
 def repeat():
-    temp = input("Do you want to continue (Y|N) ").upper()
+    temp = input("Do you want to do something else? (Y|N) ").upper()
     if temp == "Y":
         navigation()
     elif temp == "N":
@@ -237,6 +320,7 @@ def repeat():
     else:
         raise Exception("Exception")
 
+# Uncomment this line when creating the database
 # createDB()
 
 navigation()
